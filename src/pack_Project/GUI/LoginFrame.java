@@ -1,4 +1,4 @@
-// File: LoginFrame.java
+
 package pack_Project.GUI;
 
 import pack_Project.main;
@@ -11,21 +11,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class LoginFrame extends JFrame {
-    private main app; // Reference to the main application
+    private main app;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
+    private JButton signUpButton;
 
     public LoginFrame(main app) {
         this.app = app;
         setTitle("Personal Finance Manager - Login");
-        setSize(400, 300);
+        setSize(400, 380);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Center the frame
+        setLocationRelativeTo(null);
 
 
-        initComponents(); // Initialize UI components
-        addListeners();   // Add event listeners
+        initComponents();
+        addListeners();
         setVisible(true);
     }
 
@@ -78,7 +79,7 @@ public class LoginFrame extends JFrame {
         gbc.gridy = 2;
         panel.add(passwordField, gbc);
 
-        // Login Button
+
         loginButton = new JButton("Login");
         loginButton.setFont(new Font("Arial", Font.BOLD, 16));
         loginButton.setBackground(new Color(63, 150, 219));
@@ -87,7 +88,7 @@ public class LoginFrame extends JFrame {
         loginButton.setBorderPainted(false);
         loginButton.setOpaque(true);
         loginButton.setPreferredSize(new Dimension(100, 40));
-        loginButton.setBorder(BorderFactory.createLineBorder(new Color(40, 100, 150), 2)); // Darker border
+        loginButton.setBorder(BorderFactory.createLineBorder(new Color(40, 100, 150), 2));
         loginButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 loginButton.setBackground(new Color(90, 170, 230));
@@ -102,6 +103,33 @@ public class LoginFrame extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(loginButton, gbc);
 
+
+        JButton signUpButton = new JButton("Sign Up");
+        signUpButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        signUpButton.setBackground(new Color(76, 175, 80));
+        signUpButton.setForeground(Color.WHITE);
+        signUpButton.setFocusPainted(false);
+        signUpButton.setBorderPainted(false);
+        signUpButton.setOpaque(true);
+        signUpButton.setPreferredSize(new Dimension(100, 35));
+        signUpButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                signUpButton.setBackground(new Color(102, 187, 106));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                signUpButton.setBackground(new Color(76, 175, 80));
+            }
+        });
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(10, 10, 10, 10);
+        panel.add(signUpButton, gbc);
+
+
+        this.signUpButton = signUpButton;
+
         add(panel);
     }
 
@@ -114,6 +142,12 @@ public class LoginFrame extends JFrame {
             }
         });
 
+        signUpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showRegisterDialog();
+            }
+        });
 
         passwordField.addActionListener(new ActionListener() {
             @Override
@@ -121,6 +155,24 @@ public class LoginFrame extends JFrame {
                 attemptLogin();
             }
         });
+    }
+    
+    private void showRegisterDialog() {
+        RegisterDialog registerDialog = new RegisterDialog(this, app.getUserDAO());
+        registerDialog.setVisible(true);
+        
+
+        if (registerDialog.isRegistrationSuccess()) {
+            User newUser = registerDialog.getRegisteredUser();
+            if (newUser != null) {
+                usernameField.setText(newUser.getUsername());
+                passwordField.requestFocus();
+                CustomMessageBox.showInfoMessage(this, 
+                    "Registration successful!\n" +
+                    "You can now login with your new account.", 
+                    "Success");
+            }
+        }
     }
 
 
