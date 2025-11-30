@@ -1,4 +1,4 @@
-// File: BarChartPanel.java
+
 package pack_Project.GUI;
 
 import javax.swing.*;
@@ -52,7 +52,7 @@ public class BarChartPanel extends JPanel {
         int maxValue = Arrays.stream(expenseValues).max().orElse(0);
         if (maxValue == 0) maxValue = 1;
 
-        // Draw X and Y axes
+
         g2d.setColor(Color.LIGHT_GRAY);
         g2d.setStroke(new BasicStroke(1.5f));
         g2d.drawLine(padding, padding + chartHeight, padding, padding);
@@ -88,18 +88,17 @@ public class BarChartPanel extends JPanel {
 
             int x = padding + i * (barWidth + barSpacing);
             if (expenseCategories.length == 1) {
-                x = padding + (chartWidth / 2) - (barWidth / 2); // Center single bar
+                x = padding + (chartWidth / 2) - (barWidth / 2);
             }
 
             int y = padding + chartHeight - barHeight;
 
-            // Bar color
-            g2d.setColor(new Color(63, 150, 219)); // Blue color
+
+            g2d.setColor(new Color(63, 150, 219));
             g2d.fill(new Rectangle2D.Double(x, y, barWidth, barHeight));
-            g2d.setColor(new Color(40, 100, 150)); // Darker blue border
+            g2d.setColor(new Color(40, 100, 150));
             g2d.draw(new Rectangle2D.Double(x, y, barWidth, barHeight));
 
-            // Category label
             g2d.setColor(Color.DARK_GRAY);
             FontMetrics fm = g2d.getFontMetrics();
             int textWidth = fm.stringWidth(expenseCategories[i]);
@@ -107,7 +106,7 @@ public class BarChartPanel extends JPanel {
             if (textWidth > barWidth || expenseCategories.length > 5) {
                 Graphics2D g2dTemp = (Graphics2D) g2d.create();
                 g2dTemp.translate(x + barWidth / 2, height - padding + fm.getHeight() / 2);
-                g2dTemp.rotate(Math.toRadians(-45)); // Rotate by -45 degrees
+                g2dTemp.rotate(Math.toRadians(-45));
                 g2dTemp.drawString(expenseCategories[i], -textWidth / 2, 0);
                 g2dTemp.dispose();
             } else {
