@@ -1,4 +1,4 @@
-// File: TransactionDAO.java
+
 package pack_Project.DAO;
 
 import pack_Project.GUI.CustomMessageBox;
@@ -37,7 +37,7 @@ public class TransactionDAO {
             pstmt.setString(6, transaction.getNote());
 
             int rowsAffected = pstmt.executeUpdate();
-//auto genrated transaction id
+
             if (rowsAffected > 0) {
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
@@ -60,7 +60,7 @@ public class TransactionDAO {
         }
         return false;
     }
-//retrive the transaction uisng user_id
+
 
     public List<Transaction> getTransactionsByUserId(int userId) {
         List<Transaction> transactions = new ArrayList<>();
@@ -105,18 +105,16 @@ public class TransactionDAO {
     }
 
     public boolean deleteTransaction(int transactionId) {
-        // Lưu ý: Hãy kiểm tra tên bảng trong DB của bạn (ví dụ: "transactions" hay "Transaction")
+
         String sql = "DELETE FROM transactions WHERE transaction_id = ?";
 
-        // Lưu ý: Thay DatabaseConnection.getConnection() bằng cách lấy kết nối của bạn
-        // (nếu bạn dùng biến 'connection' được truyền vào constructor thì dùng biến đó)
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, transactionId);
 
             int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0; // Trả về true nếu có ít nhất 1 dòng bị xóa
+            return rowsAffected > 0;
 
         } catch (SQLException e) {
             System.err.println("Error deleting transaction: " + e.getMessage());
