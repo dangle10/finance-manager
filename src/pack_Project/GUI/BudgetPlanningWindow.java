@@ -17,15 +17,13 @@ public class BudgetPlanningWindow extends JFrame {
     private int userId;
     private BudgetDAO budgetDAO;
 
-    // Components
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> cbCategory;
     private JTextField txtMonth;
     private JTextField txtLimit;
-    private JTextField txtId; // Hidden field for ID
+    private JTextField txtId;
 
-    // Buttons
     private JButton btnAdd, btnUpdate, btnDelete, btnClear;
 
     public BudgetPlanningWindow(int userId) {
@@ -41,9 +39,8 @@ public class BudgetPlanningWindow extends JFrame {
         setSize(800, 500);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Chỉ đóng cửa sổ này, không tắt app
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // --- PANEL NHẬP LIỆU (WEST) ---
         JPanel pnlInput = new JPanel(new GridBagLayout());
         pnlInput.setBorder(BorderFactory.createTitledBorder("Budget Setting"));
         pnlInput.setPreferredSize(new Dimension(300, 0));
@@ -51,14 +48,14 @@ public class BudgetPlanningWindow extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Input Fields
+
         cbCategory = new JComboBox<>(new String[]{"Food", "Rent", "Transport", "Utilities", "Entertainment", "Healthcare", "Other"});
-        txtMonth = new JTextField(new SimpleDateFormat("yyyy-MM").format(new Date())); // Mặc định tháng hiện tại
+        txtMonth = new JTextField(new SimpleDateFormat("yyyy-MM").format(new Date()));
         txtLimit = new JTextField();
         txtId = new JTextField();
-        txtId.setVisible(false); // Ẩn ID đi
+        txtId.setVisible(false);
 
-        // Labels & Fields Placement
+
         gbc.gridx = 0; gbc.gridy = 0; pnlInput.add(new JLabel("Month (YYYY-MM):"), gbc);
         gbc.gridx = 1; gbc.gridy = 0; pnlInput.add(txtMonth, gbc);
 
@@ -68,11 +65,10 @@ public class BudgetPlanningWindow extends JFrame {
         gbc.gridx = 0; gbc.gridy = 2; pnlInput.add(new JLabel("Limit Amount (VND):"), gbc);
         gbc.gridx = 1; gbc.gridy = 2; pnlInput.add(txtLimit, gbc);
 
-        // Buttons Panel inside Input Panel
-        // Buttons Panel inside Input Panel
+
         JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 5, 5));
 
-        // Chỉ khởi tạo, KHÔNG set màu nữa
+
         btnAdd = new JButton("Add");
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
@@ -90,18 +86,18 @@ public class BudgetPlanningWindow extends JFrame {
 
         add(pnlInput, BorderLayout.WEST);
 
-        // --- PANEL DANH SÁCH (CENTER) ---
+
         String[] columns = {"ID", "Month", "Category", "Limit Amount"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Không cho sửa trực tiếp trên bảng
+                return false;
             }
         };
         table = new JTable(tableModel);
         table.setRowHeight(25);
 
-        // Sự kiện click vào bảng -> đổ dữ liệu sang form
+
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -112,7 +108,7 @@ public class BudgetPlanningWindow extends JFrame {
                     cbCategory.setSelectedItem(tableModel.getValueAt(selectedRow, 2).toString());
                     txtLimit.setText(tableModel.getValueAt(selectedRow, 3).toString());
 
-                    btnAdd.setEnabled(false); // Đang chọn dòng thì khóa nút thêm
+                    btnAdd.setEnabled(false);
                     btnUpdate.setEnabled(true);
                     btnDelete.setEnabled(true);
                 }
@@ -121,12 +117,12 @@ public class BudgetPlanningWindow extends JFrame {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // --- ACTION LISTENERS ---
+
         addActionListeners();
     }
 
     private void addActionListeners() {
-        // 1. Thêm
+
         btnAdd.addActionListener(e -> {
             if (validateInput()) {
                 Budget b = new Budget(0, userId, txtMonth.getText(),
@@ -141,7 +137,7 @@ public class BudgetPlanningWindow extends JFrame {
             }
         });
 
-        // 2. Cập nhật
+
         btnUpdate.addActionListener(e -> {
             if (txtId.getText().isEmpty()) return;
             if (validateInput()) {
@@ -158,7 +154,7 @@ public class BudgetPlanningWindow extends JFrame {
             }
         });
 
-        // 3. Xóa
+
         btnDelete.addActionListener(e -> {
             if (txtId.getText().isEmpty()) return;
             int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this budget?", "Confirm", JOptionPane.YES_NO_OPTION);
@@ -171,7 +167,7 @@ public class BudgetPlanningWindow extends JFrame {
             }
         });
 
-        // 4. Làm mới
+
         btnClear.addActionListener(e -> clearForm());
     }
 
