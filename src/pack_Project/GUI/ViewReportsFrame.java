@@ -1,4 +1,4 @@
-// File: ViewReportsFrame.java
+
 package pack_Project.GUI;
 
 import javax.swing.*;
@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Date;
 import java.util.stream.Collectors;
-import java.util.function.Function; // <--- IMPORT QUAN TRỌNG CHO CALLBACK
-
-// Import OpenPDF classes
+import java.util.function.Function;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
@@ -46,20 +44,15 @@ public class ViewReportsFrame extends JFrame {
     private PieChartPanel pieChartPanel;
     private JButton exportButton;
 
-    // Biến Callback để gọi về DashboardFrame
     private Function<Integer, Boolean> deleteCallback;
 
-    // --- Biến cho nút xóa trên hàng ---
-    private int deleteButtonColumn = 6; // Cột "x"
+    private int deleteButtonColumn = 6;
     private ActionListener deleteActionListener;
-    // ----------------------------------
-
-    // --- SỬA CONSTRUCTOR: Thêm tham số deleteCallback ---
     public ViewReportsFrame(JFrame parent, List<Transaction> userTransactions, String[] expenseCategories, Function<Integer, Boolean> deleteCallback) {
         super("Personal Finance Manager - Reports");
         this.transactions = userTransactions;
         this.expenseCategories = expenseCategories;
-        this.deleteCallback = deleteCallback; // Lưu callback lại
+        this.deleteCallback = deleteCallback;
 
         setSize(900, 700);
         setLocationRelativeTo(parent);
@@ -85,7 +78,6 @@ public class ViewReportsFrame extends JFrame {
         reportTitle.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(reportTitle, BorderLayout.NORTH);
 
-        // --- Transaction Table ---
         String[] columnNames = {"ID", "Date", "Type", "Category", "Amount", "Note", ""};
 
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -109,10 +101,10 @@ public class ViewReportsFrame extends JFrame {
         transactionTable.getTableHeader().setBackground(new Color(220, 230, 240));
         transactionTable.setFillsViewportHeight(true);
 
-        // Thiết lập chiều rộng cột
+
         transactionTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         transactionTable.getColumnModel().getColumn(0).setMaxWidth(60);
-        transactionTable.getColumnModel().getColumn(deleteButtonColumn).setPreferredWidth(40); // Rộng 40 cho nút
+        transactionTable.getColumnModel().getColumn(deleteButtonColumn).setPreferredWidth(40);
         transactionTable.getColumnModel().getColumn(deleteButtonColumn).setMaxWidth(40);
 
         JScrollPane tableScrollPane = new JScrollPane(transactionTable);
@@ -136,7 +128,6 @@ public class ViewReportsFrame extends JFrame {
 
         bottomPanel.add(chartsPanel, BorderLayout.CENTER);
 
-        // Export button panel
         JPanel exportButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         exportButtonPanel.setOpaque(false);
         exportButton = createActionButton("Export to PDF", new Color(0, 150, 136));
@@ -180,7 +171,6 @@ public class ViewReportsFrame extends JFrame {
             }
         });
 
-        // Listener cho nút "x"
         deleteActionListener = e -> {
             int modelRow = transactionTable.convertRowIndexToModel(transactionTable.getEditingRow());
             handleDeleteTransaction(modelRow);
@@ -234,7 +224,6 @@ public class ViewReportsFrame extends JFrame {
         pieChartPanel.repaint();
     }
 
-    // --- LOGIC XÓA GIAO DỊCH MỚI ---
     private void handleDeleteTransaction(int modelRow) {
         if (modelRow == -1) {
             CustomMessageBox.showWarningMessage(this, "No transaction selected for deletion.", "Error");
@@ -243,7 +232,6 @@ public class ViewReportsFrame extends JFrame {
 
         int transactionId = (int) tableModel.getValueAt(modelRow, 0);
 
-        // Xác nhận xóa vĩnh viễn
         int choice = JOptionPane.showConfirmDialog(this,
                 "Are you sure you want to PERMANENTLY delete transaction ID: " + transactionId + "?\n" +
                         "This will update your dashboard and cannot be undone.",
@@ -252,11 +240,9 @@ public class ViewReportsFrame extends JFrame {
 
         if (choice == JOptionPane.YES_OPTION) {
             try {
-                // 1. Gọi về MainFrame/DashboardFrame để xóa trong DB và cập nhật Dashboard
                 boolean dbSuccess = deleteCallback.apply(transactionId);
 
                 if (dbSuccess) {
-                    // 2. Nếu DB xóa thành công, mới xóa ở UI hiện tại
                     transactions.removeIf(t -> t.getTransactionId() == transactionId);
                     populateTable();
                     updatePieChart();
@@ -271,9 +257,6 @@ public class ViewReportsFrame extends JFrame {
         }
     }
 
-    /**
-     * Exports the transaction data to a PDF file.
-     */
     private void exportReportToPdf() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save Report to PDF");
@@ -308,7 +291,6 @@ public class ViewReportsFrame extends JFrame {
                 document.add(new Paragraph("All Transactions:", new Font(Font.HELVETICA, 16, Font.BOLD)));
                 document.add(new Paragraph(" "));
 
-                // Bỏ cột cuối (nút x) khi in PDF
                 PdfPTable pdfTable = new PdfPTable(tableModel.getColumnCount() - 1);
                 pdfTable.setWidthPercentage(100);
                 pdfTable.setSpacingBefore(10f);
@@ -359,20 +341,16 @@ public class ViewReportsFrame extends JFrame {
 }
 
 
-// =========================================================================
-// Custom Renderers & Editors (Đã sửa lỗi hiển thị và lỗi logic xóa)
-// =========================================================================
-
 class ButtonRenderer extends JButton implements TableCellRenderer {
     public ButtonRenderer() {
         setOpaque(true);
         setForeground(Color.WHITE);
-        setBackground(new Color(220, 53, 69)); // Màu đỏ
+        setBackground(new Color(220, 53, 69));
         setText("x");
         setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
         setBorderPainted(false);
         setFocusPainted(false);
-        setMargin(new Insets(0, 0, 0, 0)); // Fix lỗi "..."
+        setMargin(new Insets(0, 0, 0, 0));
     }
 
     @Override
@@ -400,11 +378,11 @@ class ButtonEditor extends DefaultCellEditor {
         button.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
         button.setBorderPainted(false);
         button.setFocusPainted(false);
-        button.setMargin(new Insets(0, 0, 0, 0)); // Fix lỗi "..."
+        button.setMargin(new Insets(0, 0, 0, 0));
 
         button.addActionListener(e -> {
             if (isPushed) {
-                // QUAN TRỌNG: Gọi ActionListener TRƯỚC khi stop editing
+
                 if (actionListener != null) {
                     actionListener.actionPerformed(e);
                 }
