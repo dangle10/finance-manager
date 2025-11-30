@@ -1,4 +1,4 @@
-// File: PieChartPanel.java
+
 package pack_Project.GUI;
 
 import javax.swing.*;
@@ -11,18 +11,18 @@ public class PieChartPanel extends JPanel {
     private double[] values;
     private Color[] colors;
 
-    // Define a set of distinct colors for the pie chart segments
+
     private static final Color[] DEFAULT_COLORS = {
-            new Color(255, 99, 132),   // Red
-            new Color(54, 162, 235),   // Blue
-            new Color(255, 206, 86),   // Yellow
-            new Color(75, 192, 192),   // Green
-            new Color(153, 102, 255),  // Purple
-            new Color(255, 159, 64),   // Orange
-            new Color(199, 199, 199),  // Gray
-            new Color(83, 102, 255),   // Indigo
-            new Color(10, 200, 100),   // Dark Green
-            new Color(250, 50, 150)    // Pink
+            new Color(255, 99, 132),
+            new Color(54, 162, 235),
+            new Color(255, 206, 86),
+            new Color(75, 192, 192),
+            new Color(153, 102, 255),
+            new Color(255, 159, 64),
+            new Color(199, 199, 199),
+            new Color(83, 102, 255),
+            new Color(10, 200, 100),
+            new Color(250, 50, 150)
     };
 
     public PieChartPanel() {
@@ -54,14 +54,12 @@ public class PieChartPanel extends JPanel {
 
         double total = Arrays.stream(values).sum();
 
-        // Declare FontMetrics once at the beginning of the method
         FontMetrics fm = g2d.getFontMetrics();
 
-        // If no data or total is zero, display "No Data"
         if (names.length == 0 || total == 0) {
             g2d.setColor(Color.DARK_GRAY);
             String noDataMsg = "No Expense Data Available";
-            int stringWidth = fm.stringWidth(noDataMsg); // fm is now accessible
+            int stringWidth = fm.stringWidth(noDataMsg);
             g2d.drawString(noDataMsg, (width - stringWidth) / 2, height / 2);
             return;
         }
@@ -69,10 +67,9 @@ public class PieChartPanel extends JPanel {
         int startAngle = 0;
         int colorIndex = 0;
 
-        // Draw pie slices
         for (int i = 0; i < values.length; i++) {
             int arcAngle = (int) Math.round((values[i] / total) * 360);
-            g2d.setColor(colors[colorIndex % colors.length]); // Cycle through colors
+            g2d.setColor(colors[colorIndex % colors.length]);
             g2d.fillArc(x, y, chartSize, chartSize, startAngle, arcAngle);
 
 
@@ -80,14 +77,14 @@ public class PieChartPanel extends JPanel {
             g2d.drawArc(x, y, chartSize, chartSize, startAngle, arcAngle);
 
 
-            // Calculate midpoint of the arc for percentage label
+
             double midAngle = Math.toRadians(startAngle + arcAngle / 2);
             int labelX = (int) (x + chartSize / 2 + (chartSize / 2 * 0.7) * Math.cos(midAngle));
             int labelY = (int) (y + chartSize / 2 + (chartSize / 2 * 0.7) * Math.sin(midAngle));
 
-            g2d.setColor(Color.BLACK); // Percentage text color
+            g2d.setColor(Color.BLACK);
             String percentage = String.format("%.1f%%", (values[i] / total) * 100);
-            // fm is already declared and initialized above
+
             int textWidth = fm.stringWidth(percentage);
             g2d.drawString(percentage, labelX - textWidth / 2, labelY + fm.getAscent() / 2);
 
@@ -95,7 +92,7 @@ public class PieChartPanel extends JPanel {
             colorIndex++;
         }
 
-        // Draw Legend
+
         int legendX = x + chartSize + 20;
         int legendY = y;
         int legendBoxSize = 15;
@@ -109,7 +106,7 @@ public class PieChartPanel extends JPanel {
 
             g2d.setColor(Color.DARK_GRAY);
             String legendText = String.format("%s (%,.0f VND)", names[i], values[i]);
-            // fm is already declared and initialized above
+
             g2d.drawString(legendText, legendX + legendBoxSize + legendSpacing, legendY + fm.getAscent());
             legendY += legendBoxSize + legendSpacing + 5;
             colorIndex++;
