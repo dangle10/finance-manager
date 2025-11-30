@@ -1,4 +1,3 @@
-// File: User.java
 package pack_Project.DTO;
 
 
@@ -15,7 +14,6 @@ public class User {
         this.email = email;
     }
 
-    // --- Getters ---
     public int getUserId() {
         return userId;
     }
@@ -32,7 +30,6 @@ public class User {
         return email;
     }
 
-    // --- Setters ---
     public void setUserId(int userId) {
         this.userId = userId;
     }
@@ -49,4 +46,3 @@ public class User {
         this.email = email;
     }
 }
-
