@@ -3,7 +3,7 @@ package pack_Project.DTO;
 public class Budget {
     private int budgetId;
     private int userId;
-    private String month; // Format: 'YYYY-MM'
+    private String month;
     private String category;
     private double limitAmount;
 
@@ -15,7 +15,7 @@ public class Budget {
         this.limitAmount = limitAmount;
     }
 
-    // Getters
+
     public int getBudgetId() {
         return budgetId;
     }
@@ -36,7 +36,7 @@ public class Budget {
         return limitAmount;
     }
 
-    // Setters
+
     public void setBudgetId(int budgetId) {
         this.budgetId = budgetId;
     }
