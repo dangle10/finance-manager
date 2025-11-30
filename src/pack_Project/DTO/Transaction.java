@@ -1,4 +1,4 @@
-// File: Transaction.java
+
 package pack_Project.DTO;
 
 import java.util.Date;
@@ -8,7 +8,7 @@ public class Transaction {
     private int transactionId;
     private int userId;
     private Date date;
-    private String type; // "income" or "expense"
+    private String type;
     private String category;
     private double amount;
     private String note;
@@ -23,7 +23,7 @@ public class Transaction {
         this.note = note;
     }
 
-    // --- Getters ---
+
     public int getTransactionId() {
         return transactionId;
     }
@@ -52,7 +52,7 @@ public class Transaction {
         return note;
     }
 
-    // --- Setters ---
+
     public void setTransactionId(int transactionId) {
         this.transactionId = transactionId;
     }
