@@ -1,4 +1,3 @@
-// File: BudgetDAO.java
 package pack_Project.DAO;
 
 import pack_Project.DTO.Budget;
@@ -9,7 +8,6 @@ import java.util.List;
 
 public class BudgetDAO {
 
-    // 1. Lấy danh sách ngân sách (Đã có - giữ nguyên)
     public List<Budget> getBudgetsByUserId(int userId) {
         List<Budget> budgets = new ArrayList<>();
         String sql = "SELECT * FROM budgets WHERE user_id = ? ORDER BY month DESC, category ASC";
@@ -35,9 +33,7 @@ public class BudgetDAO {
         return budgets;
     }
 
-    // 2. THÊM MỚI ngân sách
     public boolean addBudget(Budget budget) {
-        // Kiểm tra xem tháng đó đã có ngân sách cho category đó chưa
         if (isBudgetExists(budget.getUserId(), budget.getMonth(), budget.getCategory())) {
             CustomMessageBox.showErrorMessage(null, "Ngân sách cho mục này trong tháng " + budget.getMonth() + " đã tồn tại!", "Trùng lặp");
             return false;
@@ -59,7 +55,6 @@ public class BudgetDAO {
         }
     }
 
-    // 3. CẬP NHẬT ngân sách (Sửa số tiền)
     public boolean updateBudget(Budget budget) {
         String sql = "UPDATE budgets SET limit_amount = ?, month = ?, category = ? WHERE budget_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -77,7 +72,6 @@ public class BudgetDAO {
         }
     }
 
-    // 4. XÓA ngân sách
     public boolean deleteBudget(int budgetId) {
         String sql = "DELETE FROM budgets WHERE budget_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -91,7 +85,6 @@ public class BudgetDAO {
         }
     }
 
-    // 5. Helper: Kiểm tra trùng lặp
     public boolean isBudgetExists(int userId, String month, String category) {
         String sql = "SELECT count(*) FROM budgets WHERE user_id = ? AND month = ? AND category = ?";
         try (Connection conn = DatabaseConnection.getConnection();
