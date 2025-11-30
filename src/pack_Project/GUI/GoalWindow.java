@@ -18,7 +18,7 @@ public class GoalWindow extends JFrame {
 
     private int userId;
     private GoalDAO goalDAO;
-    private JPanel goalsContainer; // Panel chứa danh sách các thẻ mục tiêu
+    private JPanel goalsContainer;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
     public GoalWindow(int userId) {
@@ -27,19 +27,19 @@ public class GoalWindow extends JFrame {
 
         setTitle("Financial Goals Manager");
         setSize(600, 700);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Chỉ đóng cửa sổ này, không tắt App
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(240, 248, 255));
 
         initComponents();
-        loadGoals(); // Tải dữ liệu từ Database
+        loadGoals();
     }
 
     private void initComponents() {
-        // --- HEADER ---
+
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(155, 89, 182)); // Màu tím chủ đạo
+        headerPanel.setBackground(new Color(155, 89, 182));
         headerPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         JLabel titleLabel = new JLabel("My Financial Goals");
@@ -50,18 +50,18 @@ public class GoalWindow extends JFrame {
 
         add(headerPanel, BorderLayout.NORTH);
 
-        // --- BODY (SCROLL PANE) ---
+
         goalsContainer = new JPanel();
         goalsContainer.setLayout(new BoxLayout(goalsContainer, BoxLayout.Y_AXIS));
         goalsContainer.setBackground(Color.WHITE);
         goalsContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JScrollPane scrollPane = new JScrollPane(goalsContainer);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Cuộn mượt hơn
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- FOOTER (ADD BUTTON) ---
+
         JPanel footerPanel = new JPanel();
         footerPanel.setBackground(Color.WHITE);
         footerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -73,15 +73,15 @@ public class GoalWindow extends JFrame {
         addGoalBtn.setPreferredSize(new Dimension(200, 45));
 
 
-        addGoalBtn.addActionListener(e -> showGoalDialog(null)); // Null = Chế độ thêm mới
+        addGoalBtn.addActionListener(e -> showGoalDialog(null));
 
         footerPanel.add(addGoalBtn);
         add(footerPanel, BorderLayout.SOUTH);
     }
 
-    // --- HÀM TẢI DỮ LIỆU ---
+
     private void loadGoals() {
-        goalsContainer.removeAll(); // Xóa danh sách cũ
+        goalsContainer.removeAll();
         List<Goal> goals = goalDAO.getGoalsByUserId(userId);
 
         if (goals.isEmpty()) {
@@ -92,14 +92,14 @@ public class GoalWindow extends JFrame {
         } else {
             for (Goal g : goals) {
                 goalsContainer.add(createGoalCard(g));
-                goalsContainer.add(Box.createVerticalStrut(15)); // Khoảng cách giữa các thẻ
+                goalsContainer.add(Box.createVerticalStrut(15));
             }
         }
         goalsContainer.revalidate();
         goalsContainer.repaint();
     }
 
-    // --- TẠO GIAO DIỆN CHO TỪNG MỤC TIÊU (CARD) ---
+
     private JPanel createGoalCard(Goal goal) {
         JPanel card = new JPanel(new BorderLayout(10, 10));
         card.setBackground(Color.WHITE);
@@ -107,9 +107,9 @@ public class GoalWindow extends JFrame {
                 new LineBorder(new Color(220, 220, 220), 1, true),
                 new EmptyBorder(15, 15, 15, 15)
         ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160)); // Chiều cao cố định
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
 
-        // 1. Top: Tên và Trạng thái
+
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.WHITE);
         JLabel nameLabel = new JLabel(goal.getGoalName());
@@ -125,19 +125,19 @@ public class GoalWindow extends JFrame {
         topPanel.add(statusLabel, BorderLayout.EAST);
         card.add(topPanel, BorderLayout.NORTH);
 
-        // 2. Center: Progress Bar và Số tiền
+
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(Color.WHITE);
 
-        // Progress Bar
+
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setValue((int) goal.getProgressPercentage());
         progressBar.setStringPainted(true);
-        progressBar.setForeground(new Color(155, 89, 182)); // Màu tím
+        progressBar.setForeground(new Color(155, 89, 182));
         progressBar.setBackground(new Color(236, 240, 241));
 
-        // Info Text
+
         String moneyInfo = String.format("Saved: %,.0f / %,.0f VND", goal.getCurrentAmount(), goal.getTargetAmount());
         String dateInfo = "Deadline: " + (goal.getEndDate() != null ? sdf.format(goal.getEndDate()) : "N/A");
 
@@ -153,7 +153,7 @@ public class GoalWindow extends JFrame {
         centerPanel.add(dateLabel);
         card.add(centerPanel, BorderLayout.CENTER);
 
-        // 3. Right: Action Buttons (Nạp tiền, Sửa, Xóa)
+
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 0, 5));
         buttonPanel.setBackground(Color.WHITE);
 
@@ -168,7 +168,7 @@ public class GoalWindow extends JFrame {
         deleteBtn.setBackground(Color.BLACK);
 
 
-        // Logic Nút Nạp tiền
+
         depositBtn.addActionListener(e -> {
             String input = JOptionPane.showInputDialog(this, "Enter amount to save for: " + goal.getGoalName());
             if (input != null && !input.isEmpty()) {
@@ -176,24 +176,24 @@ public class GoalWindow extends JFrame {
                     double amount = Double.parseDouble(input);
                     goal.setCurrentAmount(goal.getCurrentAmount() + amount);
 
-                    // Tự động cập nhật trạng thái nếu hoàn thành
+
                     if(goal.getCurrentAmount() >= goal.getTargetAmount()) {
                         goal.setStatus("Hoàn thành");
                         JOptionPane.showMessageDialog(this, "Congratulations! Goal Completed!");
                     }
 
                     goalDAO.updateGoal(goal);
-                    loadGoals(); // Refresh lại giao diện
+                    loadGoals();
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Invalid amount!");
                 }
             }
         });
 
-        // Logic Nút Sửa
+
         editBtn.addActionListener(e -> showGoalDialog(goal));
 
-        // Logic Nút Xóa
+
         deleteBtn.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this, "Delete this goal?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
@@ -211,18 +211,17 @@ public class GoalWindow extends JFrame {
         return card;
     }
 
-    // --- DIALOG THÊM / SỬA MỤC TIÊU ---
+
     private void showGoalDialog(Goal goalToEdit) {
         JDialog dialog = new JDialog(this, goalToEdit == null ? "Add New Goal" : "Edit Goal", true);
         dialog.setSize(400, 400);
         dialog.setLocationRelativeTo(this);
-        dialog.setLayout(new GridLayout(6, 2, 10, 10)); // 6 hàng, 2 cột
+        dialog.setLayout(new GridLayout(6, 2, 10, 10));
 
         JTextField nameField = new JTextField(goalToEdit != null ? goalToEdit.getGoalName() : "");
         JTextField targetField = new JTextField(goalToEdit != null ? String.valueOf(goalToEdit.getTargetAmount()) : "");
 
-        // Xử lý ngày tháng (Đơn giản hóa bằng Text field dd/MM/yyyy nếu chưa có JCalendar)
-        // Tốt nhất bạn nên thêm thư viện JCalendar sau này.
+
         JSpinner startDateSpinner = new JSpinner(new SpinnerDateModel());
         JSpinner.DateEditor startEditor = new JSpinner.DateEditor(startDateSpinner, "dd/MM/yyyy");
         startDateSpinner.setEditor(startEditor);
@@ -249,40 +248,92 @@ public class GoalWindow extends JFrame {
             statusBox.setSelectedItem(goalToEdit.getStatus());
             dialog.add(statusBox);
         } else {
-            dialog.add(new JLabel("")); // Placeholder
+            dialog.add(new JLabel(""));
             dialog.add(new JLabel(""));
         }
 
         JButton saveBtn = new JButton("Save Goal");
         saveBtn.addActionListener(e -> {
             try {
-                String name = nameField.getText();
-                double target = Double.parseDouble(targetField.getText());
+                String name = nameField.getText().trim();
+                if (name.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Goal name cannot be empty!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                double target;
+                try {
+                    target = Double.parseDouble(targetField.getText());
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(dialog, "Invalid target amount! Please enter a valid number.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if (target <= 0) {
+                    JOptionPane.showMessageDialog(dialog, "Target amount must be greater than 0!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+
+                double maxAmount = 999999999999999.99;
+                if (target > maxAmount) {
+                    JOptionPane.showMessageDialog(dialog, 
+                        "Target amount is too large!\n" +
+                        "Maximum allowed: 999,999,999,999,999.99\n" +
+                        "Please enter a smaller amount.", 
+                        "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 Date start = (Date) startDateSpinner.getValue();
                 Date end = (Date) endDateSpinner.getValue();
+                
+                if (start == null || end == null) {
+                    JOptionPane.showMessageDialog(dialog, "Please select both start and end dates!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if (end.before(start)) {
+                    JOptionPane.showMessageDialog(dialog, "End date must be after start date!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
+                boolean success = false;
                 if (goalToEdit == null) {
-                    // ADD NEW
+
                     Goal newGoal = new Goal(userId, name, target, 0, start, end, "Đang thực hiện");
-                    goalDAO.addGoal(newGoal);
+                    success = goalDAO.addGoal(newGoal);
+                    if (success) {
+                        JOptionPane.showMessageDialog(dialog, "Goal added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 } else {
-                    // UPDATE
+
                     goalToEdit.setGoalName(name);
                     goalToEdit.setTargetAmount(target);
                     goalToEdit.setStartDate(start);
                     goalToEdit.setEndDate(end);
-                    // Nếu có combo box status thì cập nhật thêm status ở đây
-                    goalDAO.updateGoal(goalToEdit);
+
+                    success = goalDAO.updateGoal(goalToEdit);
+                    if (success) {
+                        JOptionPane.showMessageDialog(dialog, "Goal updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }
-                dialog.dispose();
-                loadGoals(); // Refresh list
+                
+                if (success) {
+                    dialog.dispose();
+                    loadGoals();
+                }
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Invalid target amount! Please enter a valid number.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Invalid input! Please check fields.");
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 ex.printStackTrace();
             }
         });
 
-        dialog.add(new JLabel("")); // Spacer
+        dialog.add(new JLabel(""));
         dialog.add(saveBtn);
 
         dialog.setVisible(true);
