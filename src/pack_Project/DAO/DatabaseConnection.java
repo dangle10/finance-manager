@@ -11,7 +11,7 @@ public class DatabaseConnection {
 
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/finance_manager";
-    private static final String DB_USER = "snute";
+    private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
 
