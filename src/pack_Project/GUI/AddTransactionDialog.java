@@ -1,4 +1,4 @@
-// File: AddTransactionDialog.java
+
 package pack_Project.GUI;
 
 import pack_Project.DAO.TransactionDAO;
@@ -67,7 +67,7 @@ public class AddTransactionDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 0; formPanel.add(dateLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 0; formPanel.add(dateField, gbc);
 
-        // Type (Income/Expense)
+
         JLabel typeLabel = new JLabel("Type:");
         typeLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         String[] types = {"Expense", "Income"};
@@ -76,15 +76,14 @@ public class AddTransactionDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 1; formPanel.add(typeLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 1; formPanel.add(typeComboBox, gbc);
 
-        // Category
         JLabel categoryLabel = new JLabel("Category:");
         categoryLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        categoryComboBox = new JComboBox<>(expenseCategories); // Default to expense categories
+        categoryComboBox = new JComboBox<>(expenseCategories);
         categoryComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
         gbc.gridx = 0; gbc.gridy = 2; formPanel.add(categoryLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 2; formPanel.add(categoryComboBox, gbc);
 
-        // Amount
+
         JLabel amountLabel = new JLabel("Amount:");
         amountLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         amountField = new JTextField();
@@ -92,10 +91,9 @@ public class AddTransactionDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 3; formPanel.add(amountLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 3; formPanel.add(amountField, gbc);
 
-        // Note
         JLabel noteLabel = new JLabel("Note (Optional):");
         noteLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        noteArea = new JTextArea(4, 25); // Increased rows and columns
+        noteArea = new JTextArea(4, 25);
         noteArea.setLineWrap(true);
         noteArea.setWrapStyleWord(true);
         noteArea.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -103,10 +101,10 @@ public class AddTransactionDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; formPanel.add(noteLabel, gbc);
         gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2; formPanel.add(noteScrollPane, gbc);
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0)); // Spacing between buttons
-        addButton = createButton("Add", new Color(46, 204, 113)); // Assign to instance variable
-        cancelButton = createButton("Cancel", new Color(231, 76, 60)); // Assign to instance variable
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        addButton = createButton("Add", new Color(46, 204, 113));
+        cancelButton = createButton("Cancel", new Color(231, 76, 60));
 
         buttonPanel.add(addButton);
         buttonPanel.add(cancelButton);
@@ -116,18 +114,17 @@ public class AddTransactionDialog extends JDialog {
 
         add(formPanel);
     }
-//action listner
+
     private void addListeners() {
-        // Update categories based on type selection
         typeComboBox.addActionListener(e -> {
             String selectedType = (String) typeComboBox.getSelectedItem();
             categoryComboBox.removeAllItems();
-            // Clear existing items
+
             if ("Expense".equals(selectedType)) {
                 for (String cat : expenseCategories) {
                     categoryComboBox.addItem(cat);
                 }
-            } else { // "Income"
+            } else {
                 for (String cat : incomeCategories) {
                     categoryComboBox.addItem(cat);
                 }
@@ -135,7 +132,6 @@ public class AddTransactionDialog extends JDialog {
             categoryComboBox.setSelectedIndex(0);
         });
 
-//        dutton action
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -143,11 +139,11 @@ public class AddTransactionDialog extends JDialog {
             }
         });
 
-        // Cancel button action
+
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose(); // Close the dialog
+                dispose();
             }
         });
     }
@@ -181,14 +177,14 @@ public class AddTransactionDialog extends JDialog {
             String category = (String) categoryComboBox.getSelectedItem();
             double amount = Double.parseDouble(amountField.getText());
             Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateField.getText());
-            String note = noteArea.getText().trim(); // Get note and trim whitespace
+            String note = noteArea.getText().trim();
 
             if (amount <= 0) {
                 CustomMessageBox.showErrorMessage(this.parentFrame, "Amount must be greater than zero.", "Input Error");
                 return;
             }
 
-            // Create new transaction object (transactionId will be auto-generated by DB)
+
             Transaction newTransaction = new Transaction(0, userId, date, type.toLowerCase(), category, amount, note);
 
             boolean success = transactionDAO.addTransaction(newTransaction);
