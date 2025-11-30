@@ -1,4 +1,4 @@
-// File: DashboardFrame.java
+
 package pack_Project.GUI;
 
 import pack_Project.main;
@@ -30,7 +30,7 @@ public class DashboardFrame extends JFrame {
     private JButton budgetPlanningButton;
     private JButton goalButton;
 
-    // Categories for quick access
+
     private String[] expenseCategoriesArray = {"Food", "Rent", "Transport", "Utilities", "Entertainment", "Healthcare", "Other"};
     private String[] incomeCategoriesArray = {"Salary", "Investments", "Gift", "Other Income"};
 
@@ -53,13 +53,12 @@ public class DashboardFrame extends JFrame {
 
     private void initComponents() {
         JPanel dashboardPanel = new JPanel();
-        dashboardPanel.setLayout(new BorderLayout(15, 15)); // Spacing between components
-        dashboardPanel.setBorder(new EmptyBorder(25, 25, 25, 25)); // Padding around the panel
-        dashboardPanel.setBackground(new Color(240, 248, 255)); // Light blue background
+        dashboardPanel.setLayout(new BorderLayout(15, 15));
+        dashboardPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
+        dashboardPanel.setBackground(new Color(240, 248, 255));
 
-        // --- Top Panel: Title and User Info ---
         JPanel topSectionPanel = new JPanel(new BorderLayout());
-        topSectionPanel.setOpaque(false); // Transparent background
+        topSectionPanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel("Personal Finance Dashboard");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
@@ -75,7 +74,7 @@ public class DashboardFrame extends JFrame {
         topSectionPanel.add(userInfoLabel, BorderLayout.EAST);
         dashboardPanel.add(topSectionPanel, BorderLayout.NORTH);
 
-        // --- Main Content Panel (holds summary, chart, and buttons) ---
+
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(new CompoundBorder(
@@ -85,9 +84,8 @@ public class DashboardFrame extends JFrame {
         contentPanel.setBackground(Color.WHITE);
         contentPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // --- Summary Panels (Balance, Income, Expenses) ---
         JPanel summaryPanel = new JPanel();
-        summaryPanel.setLayout(new GridLayout(1, 3, 20, 0)); // Increased horizontal spacing
+        summaryPanel.setLayout(new GridLayout(1, 3, 20, 0));
         summaryPanel.setBackground(Color.WHITE);
 
         currentBalanceLabel = new JLabel();
@@ -101,13 +99,13 @@ public class DashboardFrame extends JFrame {
         contentPanel.add(summaryPanel);
         contentPanel.add(Box.createVerticalStrut(30));
 
-        // --- Chart and Buttons Section ---
+
         JPanel centerSectionPanel = new JPanel();
         centerSectionPanel.setLayout(new BoxLayout(centerSectionPanel, BoxLayout.X_AXIS));
         centerSectionPanel.setBackground(Color.WHITE);
         centerSectionPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Chart Container
+
         JPanel chartContainer = new JPanel(new BorderLayout());
         chartContainer.setBackground(Color.WHITE);
         chartContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -117,17 +115,17 @@ public class DashboardFrame extends JFrame {
         chartContainer.add(chartTitle, BorderLayout.NORTH);
 
         barChartPanel = new BarChartPanel(new int[0], expenseCategoriesArray);
-        barChartPanel.setPreferredSize(new Dimension(450, 300)); // chart size
+        barChartPanel.setPreferredSize(new Dimension(450, 300));
         chartContainer.add(barChartPanel, BorderLayout.CENTER);
         centerSectionPanel.add(chartContainer);
         centerSectionPanel.add(Box.createHorizontalStrut(30));
 
-        // Button Panel
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBackground(Color.WHITE);
 
-        //buttons
+
         addTransactionButton = createActionButton("Add Transaction", new Color(63, 150, 219));
         viewReportsButton = createActionButton("View Reports", new Color(46, 204, 113));
         budgetPlanningButton = createActionButton("Budget Planning", new Color(243, 156, 18));
@@ -205,13 +203,13 @@ public class DashboardFrame extends JFrame {
     private void addListeners() {
         addTransactionButton.addActionListener(e -> {
             AddTransactionDialog addDialog = new AddTransactionDialog(this, currentUser.getUserId(), expenseCategoriesArray, incomeCategoriesArray, app.getTransactionDAO());
-            addDialog.setVisible(true); // Show dialog modally
-            refreshDashboard(); // Refresh dashboard after dialog closes
+            addDialog.setVisible(true);
+            refreshDashboard();
         });
 
         viewReportsButton.addActionListener(e -> {
             List<Transaction> userTransactions = app.getTransactionDAO().getTransactionsByUserId(currentUser.getUserId());
-            // --- SỬA ĐỔI QUAN TRỌNG: Truyền callback xóa vào đây ---
+
             new ViewReportsFrame(this, userTransactions, expenseCategoriesArray, this::handleDeleteCallback);
         });
 
@@ -226,14 +224,14 @@ public class DashboardFrame extends JFrame {
         });
     }
 
-    // --- PHƯƠNG THỨC MỚI: Xử lý khi ViewReportsFrame yêu cầu xóa ---
+
     private boolean handleDeleteCallback(int transactionId) {
         try {
-            // 1. Xóa khỏi Database
+
             boolean success = app.getTransactionDAO().deleteTransaction(transactionId);
 
             if (success) {
-                // 2. Nếu xóa thành công, cập nhật lại Dashboard ngay lập tức
+
                 refreshDashboard();
                 return true;
             }
@@ -243,14 +241,14 @@ public class DashboardFrame extends JFrame {
             return false;
         }
     }
-    // ---------------------------------------------------------------
+
 
     public void refreshDashboard() {
         double currentBalance = 0.00;
         double totalIncome = 0.00;
         double totalExpenses = 0.00;
 
-        // Lấy lại dữ liệu mới nhất từ DB
+
         List<Transaction> userTransactions = app.getTransactionDAO().getTransactionsByUserId(currentUser.getUserId());
 
         for (Transaction t : userTransactions) {
@@ -262,12 +260,12 @@ public class DashboardFrame extends JFrame {
         }
         currentBalance = totalIncome - totalExpenses;
 
-        // Update labels (VND)
+
         currentBalanceLabel.setText(String.format("%,.0f VND", currentBalance));
         totalIncomeLabel.setText(String.format("%,.0f VND", totalIncome));
         totalExpensesLabel.setText(String.format("%,.0f VND", totalExpenses));
 
-        // Update chart
+
         barChartPanel.setChartData(getExpenseDataForChart(userTransactions));
         barChartPanel.repaint();
     }
@@ -281,14 +279,14 @@ public class DashboardFrame extends JFrame {
 
         List<Transaction> userMonthlyExpenses = userTransactions.stream()
                 .filter(t -> "expense".equalsIgnoreCase(t.getType()) &&
-                        isSameMonthAndYear(t.getDate(), new Date())) // Compare with current date
+                        isSameMonthAndYear(t.getDate(), new Date()))
                 .collect(Collectors.toList());
 
 
         double[] expenseValuesDouble = new double[expenseCategoriesArray.length];
         for (Transaction t : userMonthlyExpenses) {
             for (int i = 0; i < expenseCategoriesArray.length; i++) {
-                // Case-insensitive comparison for category
+
                 if (expenseCategoriesArray[i].equalsIgnoreCase(t.getCategory())) {
                     expenseValuesDouble[i] += t.getAmount();
                     break;
