@@ -4,7 +4,7 @@ import pack_Project.DAO.BudgetDAO;
 import pack_Project.DAO.TransactionDAO;
 import pack_Project.DAO.UserDAO;
 import pack_Project.DAO.GoalDAO;
-import pack_Project.GUI.LoginFrame;
+import pack_Project.GUI.DefaultLoginFrame;
 
 import javax.swing.*;
 
@@ -50,7 +50,7 @@ public class main {
 
         SwingUtilities.invokeLater(() -> {
             main app = new main();
-            new LoginFrame(app);
+            new DefaultLoginFrame(app);
         });
     }
 }
