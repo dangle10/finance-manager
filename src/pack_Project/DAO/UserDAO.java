@@ -72,20 +72,7 @@ public class UserDAO {
             
             String errorMsg = "Database error during registration.\n\n";
             
-            if (se.getErrorCode() == 1062) {
-                errorMsg += "Username already exists!\n";
-                errorMsg += "Please choose a different username.";
-            } else if (se.getErrorCode() == 1406) {
-                errorMsg += "Data too long for one of the fields.\n";
-                errorMsg += "Please check your input.";
-            } else if (se.getErrorCode() == 1146) {
-                errorMsg += "Table 'users' does not exist.\n";
-                errorMsg += "Please run database_setup.sql to create the table.";
-            } else {
-                errorMsg += "SQL Error: " + se.getMessage();
-            }
-            
-            CustomMessageBox.showErrorMessage(null, errorMsg, "Registration Error");
+           
         } finally {
             try {
                 if (rs != null) rs.close();
