@@ -1,4 +1,3 @@
-
 package pack_Project.GUI;
 
 import pack_Project.main;
@@ -10,12 +9,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class LoginFrame extends JFrame {
-    private main app;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JButton loginButton;
-    private JButton signUpButton;
+// Đổi lớp LoginFrame thành abstract
+public abstract class LoginFrame extends JFrame {
+    protected main app; // Đổi thành protected để lớp con dễ truy cập
+    protected JTextField usernameField;
+    protected JPasswordField passwordField;
+    protected JButton loginButton;
+    protected JButton signUpButton;
 
     public LoginFrame(main app) {
         this.app = app;
@@ -24,12 +24,14 @@ public class LoginFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-
         initComponents();
         addListeners();
         setVisible(true);
     }
 
+    // Phương thức trừu tượng để xử lý việc chuyển sang màn hình tiếp theo
+    // Lớp con (ví dụ: DefaultLoginFrame) sẽ phải triển khai phương thức này.
+    protected abstract void onLoginSuccess(User authenticatedUser);
 
     private void initComponents() {
         JPanel panel = new JPanel();
@@ -41,7 +43,6 @@ public class LoginFrame extends JFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-
         JLabel titleLabel = new JLabel("Welcome to PFM");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(0, 102, 204));
@@ -50,7 +51,6 @@ public class LoginFrame extends JFrame {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(titleLabel, gbc);
-
 
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -66,7 +66,6 @@ public class LoginFrame extends JFrame {
         gbc.gridy = 1;
         panel.add(usernameField, gbc);
 
-
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         gbc.gridx = 0;
@@ -79,7 +78,7 @@ public class LoginFrame extends JFrame {
         gbc.gridy = 2;
         panel.add(passwordField, gbc);
 
-
+        // --- Login Button ---
         loginButton = new JButton("Login");
         loginButton.setFont(new Font("Arial", Font.BOLD, 16));
         loginButton.setBackground(new Color(63, 150, 219));
@@ -103,7 +102,7 @@ public class LoginFrame extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(loginButton, gbc);
 
-
+        // --- Sign Up Button ---
         JButton signUpButton = new JButton("Sign Up");
         signUpButton.setFont(new Font("Arial", Font.PLAIN, 14));
         signUpButton.setBackground(new Color(76, 175, 80));
@@ -127,12 +126,10 @@ public class LoginFrame extends JFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         panel.add(signUpButton, gbc);
 
-
         this.signUpButton = signUpButton;
 
         add(panel);
     }
-
 
     private void addListeners() {
         loginButton.addActionListener(new ActionListener() {
@@ -156,25 +153,23 @@ public class LoginFrame extends JFrame {
             }
         });
     }
-    
+
     private void showRegisterDialog() {
         RegisterDialog registerDialog = new RegisterDialog(this, app.getUserDAO());
         registerDialog.setVisible(true);
-        
 
         if (registerDialog.isRegistrationSuccess()) {
             User newUser = registerDialog.getRegisteredUser();
             if (newUser != null) {
                 usernameField.setText(newUser.getUsername());
                 passwordField.requestFocus();
-                CustomMessageBox.showInfoMessage(this, 
-                    "Registration successful!\n" +
-                    "You can now login with your new account.", 
-                    "Success");
+                CustomMessageBox.showInfoMessage(this,
+                        "Registration successful!\n" +
+                                "You can now login with your new account.",
+                        "Success");
             }
         }
     }
-
 
     private void attemptLogin() {
         String username = usernameField.getText();
@@ -185,7 +180,8 @@ public class LoginFrame extends JFrame {
         if (authenticatedUser != null) {
             CustomMessageBox.showInfoMessage(this, "Login Successful!", "Success");
             dispose();
-            new DashboardFrame(app, authenticatedUser);
+            // Gọi phương thức trừu tượng để lớp con xử lý logic tiếp theo
+            onLoginSuccess(authenticatedUser);
         } else {
             CustomMessageBox.showErrorMessage(this, "Invalid Username or Password.", "Login Failed");
             passwordField.setText("");
