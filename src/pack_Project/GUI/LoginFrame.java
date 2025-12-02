@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-// Đổi lớp LoginFrame thành abstract
 public abstract class LoginFrame extends JFrame {
     protected main app; // Đổi thành protected để lớp con dễ truy cập
     protected JTextField usernameField;
@@ -29,8 +28,6 @@ public abstract class LoginFrame extends JFrame {
         setVisible(true);
     }
 
-    // Phương thức trừu tượng để xử lý việc chuyển sang màn hình tiếp theo
-    // Lớp con (ví dụ: DefaultLoginFrame) sẽ phải triển khai phương thức này.
     protected abstract void onLoginSuccess(User authenticatedUser);
 
     private void initComponents() {
@@ -78,7 +75,6 @@ public abstract class LoginFrame extends JFrame {
         gbc.gridy = 2;
         panel.add(passwordField, gbc);
 
-        // --- Login Button ---
         loginButton = new JButton("Login");
         loginButton.setFont(new Font("Arial", Font.BOLD, 16));
         loginButton.setBackground(new Color(63, 150, 219));
@@ -102,7 +98,6 @@ public abstract class LoginFrame extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(loginButton, gbc);
 
-        // --- Sign Up Button ---
         JButton signUpButton = new JButton("Sign Up");
         signUpButton.setFont(new Font("Arial", Font.PLAIN, 14));
         signUpButton.setBackground(new Color(76, 175, 80));
