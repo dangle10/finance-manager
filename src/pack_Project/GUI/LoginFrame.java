@@ -10,7 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public abstract class LoginFrame extends JFrame {
-    protected main app; // Đổi thành protected để lớp con dễ truy cập
+    protected main app;
     protected JTextField usernameField;
     protected JPasswordField passwordField;
     protected JButton loginButton;
