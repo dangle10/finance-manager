@@ -1,33 +1,36 @@
+
 package pack_Project.DAO;
 
 import pack_Project.DTO.Budget;
 import pack_Project.GUI.CustomMessageBox;
-import java.sql.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BudgetDAO {
 
+    private static final String BUDGET_FILE_NAME = "budgets.txt";
+
     public List<Budget> getBudgetsByUserId(int userId) {
         List<Budget> budgets = new ArrayList<>();
-        String sql = "SELECT * FROM budgets WHERE user_id = ? ORDER BY month DESC, category ASC";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, userId);
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                budgets.add(new Budget(
-                        rs.getInt("budget_id"),
-                        rs.getInt("user_id"),
-                        rs.getString("month"),
-                        rs.getString("category"),
-                        rs.getDouble("limit_amount")
-                ));
+        try {
+            File file = FileStorageUtil.getDataFile(BUDGET_FILE_NAME);
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length < 5) continue;
+                int uid = Integer.parseInt(parts[1]);
+                if (uid != userId) continue;
+                int id = Integer.parseInt(parts[0]);
+                String month = parts[2];
+                String category = parts[3];
+                double limitAmount = Double.parseDouble(parts[4]);
+                budgets.add(new Budget(id, uid, month, category, limitAmount));
             }
-        } catch (SQLException se) {
+        } catch (Exception se) {
             se.printStackTrace();
         }
         return budgets;
@@ -38,67 +41,103 @@ public class BudgetDAO {
             CustomMessageBox.showErrorMessage(null, "Ngân sách cho mục này trong tháng " + budget.getMonth() + " đã tồn tại!", "Trùng lặp");
             return false;
         }
-
-        String sql = "INSERT INTO budgets (user_id, month, category, limit_amount) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, budget.getUserId());
-            pstmt.setString(2, budget.getMonth());
-            pstmt.setString(3, budget.getCategory());
-            pstmt.setDouble(4, budget.getLimitAmount());
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException se) {
-            se.printStackTrace();
+        try {
+            File file = FileStorageUtil.getDataFile(BUDGET_FILE_NAME);
+            int newId = FileStorageUtil.generateNextId(file);
+            budget.setBudgetId(newId);
+            String line = newId + ";" +
+                    budget.getUserId() + ";" +
+                    budget.getMonth() + ";" +
+                    budget.getCategory().replace(";", ",") + ";" +
+                    budget.getLimitAmount();
+            FileStorageUtil.appendLine(file, line);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
     }
 
     public boolean updateBudget(Budget budget) {
-        String sql = "UPDATE budgets SET limit_amount = ?, month = ?, category = ? WHERE budget_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setDouble(1, budget.getLimitAmount());
-            pstmt.setString(2, budget.getMonth());
-            pstmt.setString(3, budget.getCategory());
-            pstmt.setInt(4, budget.getBudgetId());
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException se) {
-            se.printStackTrace();
+        try {
+            File file = FileStorageUtil.getDataFile(BUDGET_FILE_NAME);
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            List<String> newLines = new ArrayList<>();
+            boolean updated = false;
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length < 5) {
+                    newLines.add(line);
+                    continue;
+                }
+                int id = Integer.parseInt(parts[0]);
+                if (id == budget.getBudgetId()) {
+                    String newLine = budget.getBudgetId() + ";" +
+                            budget.getUserId() + ";" +
+                            budget.getMonth() + ";" +
+                            budget.getCategory().replace(";", ",") + ";" +
+                            budget.getLimitAmount();
+                    newLines.add(newLine);
+                    updated = true;
+                } else {
+                    newLines.add(line);
+                }
+            }
+            if (updated) {
+                FileStorageUtil.writeAllLines(file, newLines);
+            }
+            return updated;
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
 
     public boolean deleteBudget(int budgetId) {
-        String sql = "DELETE FROM budgets WHERE budget_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, budgetId);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException se) {
-            se.printStackTrace();
+        try {
+            File file = FileStorageUtil.getDataFile(BUDGET_FILE_NAME);
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            List<String> newLines = new ArrayList<>();
+            boolean removed = false;
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length < 1) continue;
+                int id = Integer.parseInt(parts[0]);
+                if (id == budgetId) {
+                    removed = true;
+                    continue;
+                }
+                newLines.add(line);
+            }
+            if (removed) {
+                FileStorageUtil.writeAllLines(file, newLines);
+            }
+            return removed;
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
 
     public boolean isBudgetExists(int userId, String month, String category) {
-        String sql = "SELECT count(*) FROM budgets WHERE user_id = ? AND month = ? AND category = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, userId);
-            pstmt.setString(2, month);
-            pstmt.setString(3, category);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+        try {
+            File file = FileStorageUtil.getDataFile(BUDGET_FILE_NAME);
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length < 5) continue;
+                int uid = Integer.parseInt(parts[1]);
+                String m = parts[2];
+                String c = parts[3];
+                if (uid == userId && m.equals(month) && c.equals(category)) {
+                    return true;
+                }
             }
-        } catch (SQLException se) {
-            se.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }

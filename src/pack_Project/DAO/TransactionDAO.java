@@ -1,128 +1,105 @@
 
 package pack_Project.DAO;
 
-import pack_Project.GUI.CustomMessageBox;
 import pack_Project.DTO.Transaction;
+import pack_Project.GUI.CustomMessageBox;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.sql.Date;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 public class TransactionDAO {
 
+    private static final String TX_FILE_NAME = "transactions.txt";
 
     public boolean addTransaction(Transaction transaction) {
-        String sql = "INSERT INTO transactions (user_id, date, type, category, amount, note) VALUES (?, ?, ?, ?, ?, ?)";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
         try {
-            conn = DatabaseConnection.getConnection();
-            if (conn == null) return false;
-
-            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setInt(1, transaction.getUserId());
-            pstmt.setDate(2, new Date(transaction.getDate().getTime()));
-            pstmt.setString(3, transaction.getType());
-            pstmt.setString(4, transaction.getCategory());
-            pstmt.setDouble(5, transaction.getAmount());
-            pstmt.setString(6, transaction.getNote());
-
-            int rowsAffected = pstmt.executeUpdate();
-
-            if (rowsAffected > 0) {
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        transaction.setTransactionId(generatedKeys.getInt(1));
-                    }
-                }
-                return true;
-            }
-        } catch (SQLException se) {
-            System.err.println("Error adding transaction: " + se.getMessage());
-            se.printStackTrace();
-            CustomMessageBox.showErrorMessage(null, "Database error adding transaction.", "Transaction Error");
-        } finally {
-            try {
-                if (pstmt != null) pstmt.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-            DatabaseConnection.closeConnection(conn);
+            File file = FileStorageUtil.getDataFile(TX_FILE_NAME);
+            int newId = FileStorageUtil.generateNextId(file);
+            transaction.setTransactionId(newId);
+            String line = newId + ";" +
+                    transaction.getUserId() + ";" +
+                    FileStorageUtil.formatDate(transaction.getDate()) + ";" +
+                    safe(transaction.getType()) + ";" +
+                    safe(transaction.getCategory()) + ";" +
+                    transaction.getAmount() + ";" +
+                    safe(transaction.getNote());
+            FileStorageUtil.appendLine(file, line);
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error adding transaction: " + e.getMessage());
+            e.printStackTrace();
+            CustomMessageBox.showErrorMessage(null, "File error adding transaction.", "Transaction Error");
         }
         return false;
     }
 
-
     public List<Transaction> getTransactionsByUserId(int userId) {
         List<Transaction> transactions = new ArrayList<>();
-        String sql = "SELECT transaction_id, user_id, date, type, category, amount, note FROM transactions WHERE user_id = ?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
         try {
-            conn = DatabaseConnection.getConnection();
-            if (conn == null) return transactions;
-
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, userId);
-            rs = pstmt.executeQuery();
-
-            while (rs.next()) {
+            File file = FileStorageUtil.getDataFile(TX_FILE_NAME);
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length < 7) continue;
+                int uid = Integer.parseInt(parts[1]);
+                if (uid != userId) continue;
+                int txId = Integer.parseInt(parts[0]);
+                Date date = FileStorageUtil.parseDate(parts[2]);
+                String type = parts[3];
+                String category = parts[4];
+                double amount = Double.parseDouble(parts[5]);
+                String note = parts[6];
                 transactions.add(new Transaction(
-                        rs.getInt("transaction_id"),
-                        rs.getInt("user_id"),
-                        rs.getDate("date"),
-                        rs.getString("type"),
-                        rs.getString("category"),
-                        rs.getDouble("amount"),
-                        rs.getString("note")
+                        txId,
+                        uid,
+                        date,
+                        type,
+                        category,
+                        amount,
+                        note
                 ));
             }
-        } catch (SQLException se) {
+        } catch (Exception se) {
             System.err.println("Error retrieving transactions: " + se.getMessage());
             se.printStackTrace();
-            CustomMessageBox.showErrorMessage(null, "Database error retrieving transactions. Check console for details.", "Data Retrieval Error");
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (pstmt != null) pstmt.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-            DatabaseConnection.closeConnection(conn);
+            CustomMessageBox.showErrorMessage(null, "File error retrieving transactions. Check console for details.", "Data Retrieval Error");
         }
         return transactions;
     }
 
     public boolean deleteTransaction(int transactionId) {
-
-        String sql = "DELETE FROM transactions WHERE transaction_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, transactionId);
-
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-
-        } catch (SQLException e) {
+        try {
+            File file = FileStorageUtil.getDataFile(TX_FILE_NAME);
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            List<String> newLines = new ArrayList<>();
+            boolean removed = false;
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length < 1) continue;
+                int id = Integer.parseInt(parts[0]);
+                if (id == transactionId) {
+                    removed = true;
+                    continue;
+                }
+                newLines.add(line);
+            }
+            if (removed) {
+                FileStorageUtil.writeAllLines(file, newLines);
+            }
+            return removed;
+        } catch (Exception e) {
             System.err.println("Error deleting transaction: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        return false;
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.replace(";", ",");
     }
 }
-
-
-

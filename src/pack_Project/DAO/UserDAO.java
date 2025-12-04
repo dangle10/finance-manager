@@ -1,16 +1,18 @@
 
 package pack_Project.DAO;
 
-import pack_Project.GUI.CustomMessageBox;
 import pack_Project.DTO.User;
+import pack_Project.GUI.CustomMessageBox;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class UserDAO {
+
+    private static final String USER_FILE_NAME = "users.txt";
 
     public User registerUser(String username, String password, String email) {
 
@@ -18,152 +20,100 @@ public class UserDAO {
             CustomMessageBox.showErrorMessage(null, "Username cannot be empty!", "Registration Error");
             return null;
         }
-        
+
         if (password == null || password.trim().isEmpty()) {
             CustomMessageBox.showErrorMessage(null, "Password cannot be empty!", "Registration Error");
             return null;
         }
-        
+
         if (password.length() < 3) {
             CustomMessageBox.showErrorMessage(null, "Password must be at least 3 characters long!", "Registration Error");
             return null;
         }
-        
 
         if (isUsernameExists(username)) {
             CustomMessageBox.showErrorMessage(null, "Username already exists! Please choose another one.", "Registration Error");
             return null;
         }
-        
-        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        User newUser = null;
 
+        File file = FileStorageUtil.getDataFile(USER_FILE_NAME);
         try {
-            conn = DatabaseConnection.getConnection();
-            if (conn == null) {
-                return null;
-            }
-            
-            pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, username.trim());
-            pstmt.setString(2, password);
-            pstmt.setString(3, email != null && !email.trim().isEmpty() ? email.trim() : null);
-
-            int rowsAffected = pstmt.executeUpdate();
-
-            if (rowsAffected > 0) {
-
-                rs = pstmt.getGeneratedKeys();
-                if (rs.next()) {
-                    int userId = rs.getInt(1);
-                    newUser = new User(userId, username.trim(), password, email != null ? email.trim() : null);
-                    System.out.println("User registered successfully with ID: " + userId);
-                }
-            }
-        } catch (SQLException se) {
-            System.err.println("Error registering user:");
-            System.err.println("Error Code: " + se.getErrorCode());
-            System.err.println("SQL State: " + se.getSQLState());
-            System.err.println("Message: " + se.getMessage());
-            se.printStackTrace();
-            
-            String errorMsg = "Database error during registration.\n\n";
-            
-           
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (pstmt != null) pstmt.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-            DatabaseConnection.closeConnection(conn);
+            int newId = FileStorageUtil.generateNextId(file);
+            String safeEmail = (email != null) ? email.trim() : "";
+            String line = newId + ";" + username.trim() + ";" + password + ";" + safeEmail;
+            FileStorageUtil.appendLine(file, line);
+            return new User(newId, username.trim(), password, safeEmail.isEmpty() ? null : safeEmail);
+        } catch (IOException e) {
+            e.printStackTrace();
+            CustomMessageBox.showErrorMessage(null, "Error saving user to file.", "File Error");
+            return null;
         }
-        return newUser;
     }
 
     public boolean isUsernameExists(String username) {
-        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
+        String target = username.trim();
+        File file = FileStorageUtil.getDataFile(USER_FILE_NAME);
         try {
-            conn = DatabaseConnection.getConnection();
-            if (conn == null) {
-                return false;
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length >= 2 && parts[1].equals(target)) {
+                    return true;
+                }
             }
-            
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, username.trim());
-            rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException se) {
-            System.err.println("Error checking username: " + se.getMessage());
-            se.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (pstmt != null) pstmt.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-            DatabaseConnection.closeConnection(conn);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return false;
     }
 
     public User authenticateUser(String username, String password) {
-        String sql = "SELECT user_id, username, password, email FROM users WHERE username = ? AND password = ?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        User user = null;
-
+        File file = FileStorageUtil.getDataFile(USER_FILE_NAME);
         try {
-            conn = DatabaseConnection.getConnection();
-            if (conn == null) {
-                return null;
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length >= 4) {
+                    String storedUsername = parts[1];
+                    String storedPassword = parts[2];
+                    if (storedUsername.equals(username) && storedPassword.equals(password)) {
+                        int userId = Integer.parseInt(parts[0]);
+                        String email = parts[3].isEmpty() ? null : parts[3];
+                        return new User(userId, storedUsername, storedPassword, email);
+                    }
+                }
             }
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-
-            rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                user = new User(
-                        rs.getInt("user_id"),
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("email")
-                );
-            }
-        } catch (SQLException se) {
-            System.err.println("Error authenticating user: " + se.getMessage());
-            se.printStackTrace();
-            CustomMessageBox.showErrorMessage(null, "Database error during login", "Login Error");
+        } catch (IOException e) {
+            e.printStackTrace();
+            CustomMessageBox.showErrorMessage(null, "Error reading user file.", "Login Error");
+        } catch (NumberFormatException ex) {
+            ex.printStackTrace();
         }
-        finally
-        {
+        return null;
+    }
 
-            try {
-                if (rs != null)
-                    rs.close();
-                if (pstmt != null) pstmt.close();
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        File file = FileStorageUtil.getDataFile(USER_FILE_NAME);
+        try {
+            List<String> lines = FileStorageUtil.readAllLines(file);
+            for (String line : lines) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(";", -1);
+                if (parts.length >= 4) {
+                    int userId = Integer.parseInt(parts[0]);
+                    String username = parts[1];
+                    String password = parts[2];
+                    String email = parts[3].isEmpty() ? null : parts[3];
+                    users.add(new User(userId, username, password, email));
+                }
             }
-            catch (SQLException se)
-            {
-                se.printStackTrace();
-            }
-            DatabaseConnection.closeConnection(conn);
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
         }
-        return user;
+        return users;
     }
 }
+
